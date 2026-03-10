@@ -1,0 +1,36 @@
+{
+  "name": "quick-get-schema",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --dts --format esm"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.4",
+    "drizzle-kit": "^0.31.2",
+    "tsup": "^8.5.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.45.1",
+    "drizzle-zod": "^0.8.2",
+    "nanoid": "^5.1.5",
+    "pg": "^8.16.2"
+  },
+  "packageManager": "pnpm@10.7.1"
+}
