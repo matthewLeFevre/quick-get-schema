@@ -89,10 +89,10 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
-  workExperiences: many(work_experience),
-  powerStatements: many(power_statement),
+  workExperiences: many(workExperience),
+  powerStatements: many(powerStatement),
   skills: many(skill),
-  coreValues: many(core_value),
+  coreValues: many(coreValue),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -111,7 +111,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 // Rest of tables
 
-export const work_experience = pgTable("work_experience", {
+export const workExperience = pgTable("work_experience", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => "we_" + nanoid()),
@@ -124,20 +124,20 @@ export const work_experience = pgTable("work_experience", {
     .references(() => user.id, { onDelete: "cascade" }),
 });
 
-export const work_experience_section = pgTable("work_experience_section", {
+export const workExperienceSection = pgTable("work_experience_section", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => "wes_" + nanoid()),
   workExperienceId: text("work_experience_id")
     .notNull()
-    .references(() => work_experience.id, { onDelete: "cascade" }),
+    .references(() => workExperience.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   note: text("note"),
   startDate: text("start_date"),
   endDate: text("end_date"),
 });
 
-export const work_experience_section_result = pgTable(
+export const workExperienceSectionResult = pgTable(
   "work_experience_section_result",
   {
     id: text("id")
@@ -145,13 +145,13 @@ export const work_experience_section_result = pgTable(
       .$defaultFn(() => "wesr_" + nanoid()),
     workExperienceSectionId: text("work_experience_section_id")
       .notNull()
-      .references(() => work_experience_section.id, { onDelete: "cascade" }),
+      .references(() => workExperienceSection.id, { onDelete: "cascade" }),
     order: integer("order").notNull(),
     description: text("description").notNull(),
   },
 );
 
-export const power_statement = pgTable("power_statement", {
+export const powerStatement = pgTable("power_statement", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => "ps_" + nanoid()),
@@ -172,7 +172,7 @@ export const skill = pgTable("skill", {
     .references(() => user.id, { onDelete: "cascade" }),
 });
 
-export const core_value = pgTable("core_value", {
+export const coreValue = pgTable("core_value", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => "cv_" + nanoid()),
@@ -186,46 +186,43 @@ export const core_value = pgTable("core_value", {
 // Relations
 
 export const workExperienceRelations = relations(
-  work_experience,
+  workExperience,
   ({ one, many }) => ({
     user: one(user, {
-      fields: [work_experience.userId],
+      fields: [workExperience.userId],
       references: [user.id],
     }),
-    sections: many(work_experience_section),
+    sections: many(workExperienceSection),
   }),
 );
 
 export const workExperienceSectionRelations = relations(
-  work_experience_section,
+  workExperienceSection,
   ({ one, many }) => ({
-    workExperience: one(work_experience, {
-      fields: [work_experience_section.workExperienceId],
-      references: [work_experience.id],
+    workExperience: one(workExperience, {
+      fields: [workExperienceSection.workExperienceId],
+      references: [workExperience.id],
     }),
-    results: many(work_experience_section_result),
+    results: many(workExperienceSectionResult),
   }),
 );
 
 export const workExperienceSectionResultRelations = relations(
-  work_experience_section_result,
+  workExperienceSectionResult,
   ({ one }) => ({
-    section: one(work_experience_section, {
-      fields: [work_experience_section_result.workExperienceSectionId],
-      references: [work_experience_section.id],
+    section: one(workExperienceSection, {
+      fields: [workExperienceSectionResult.workExperienceSectionId],
+      references: [workExperienceSection.id],
     }),
   }),
 );
 
-export const powerStatementRelations = relations(
-  power_statement,
-  ({ one }) => ({
-    user: one(user, {
-      fields: [power_statement.userId],
-      references: [user.id],
-    }),
+export const powerStatementRelations = relations(powerStatement, ({ one }) => ({
+  user: one(user, {
+    fields: [powerStatement.userId],
+    references: [user.id],
   }),
-);
+}));
 
 export const skillRelations = relations(skill, ({ one }) => ({
   user: one(user, {
@@ -234,9 +231,9 @@ export const skillRelations = relations(skill, ({ one }) => ({
   }),
 }));
 
-export const coreValueRelations = relations(core_value, ({ one }) => ({
+export const coreValueRelations = relations(coreValue, ({ one }) => ({
   user: one(user, {
-    fields: [core_value.userId],
+    fields: [coreValue.userId],
     references: [user.id],
   }),
 }));
