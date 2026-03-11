@@ -183,6 +183,22 @@ export const coreValue = pgTable("core_value", {
     .references(() => user.id, { onDelete: "cascade" }),
 });
 
+export const application = pgTable("application", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => "app_" + nanoid()),
+  company: text("company").notNull(),
+  position: text("position").notNull(),
+  status: text("status").notNull(),
+  jobLink: text("link"),
+  jobDescription: text("job_description"),
+  appliedAt: timestamp("applied_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
 // Relations
 
 export const workExperienceRelations = relations(
