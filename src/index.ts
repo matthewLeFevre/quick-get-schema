@@ -93,6 +93,8 @@ export const userRelations = relations(user, ({ many }) => ({
   powerStatements: many(powerStatement),
   skills: many(skill),
   coreValues: many(coreValue),
+  links: many(link),
+  educations: many(education),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -125,10 +127,12 @@ export const workExperience = pgTable("work_experience", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => "we_" + nanoid()),
-  company: text("employer").notNull(),
-  order: integer("order").notNull(),
-  startDate: text("start_date").notNull(),
+  company: text("company"),
+  order: integer("order"),
+  startDate: text("start_date"),
   endDate: text("end_date"),
+  city: text("city"),
+  state: text("state"),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -141,10 +145,13 @@ export const workExperienceSection = pgTable("work_experience_section", {
   workExperienceId: text("work_experience_id")
     .notNull()
     .references(() => workExperience.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
+  title: text("title"),
   note: text("note"),
   startDate: text("start_date"),
   endDate: text("end_date"),
+  city: text("city"),
+  state: text("state"),
+  order: integer("order").notNull(),
 });
 
 export const workExperienceSectionResult = pgTable(
@@ -157,7 +164,7 @@ export const workExperienceSectionResult = pgTable(
       .notNull()
       .references(() => workExperienceSection.id, { onDelete: "cascade" }),
     order: integer("order").notNull(),
-    description: text("description").notNull(),
+    description: text("description"),
   },
 );
 
@@ -165,7 +172,7 @@ export const powerStatement = pgTable("power_statement", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => "ps_" + nanoid()),
-  description: text("description").notNull(),
+  description: text("description"),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -186,7 +193,7 @@ export const coreValue = pgTable("core_value", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => "cv_" + nanoid()),
-  name: text("name").notNull(),
+  name: text("name"),
   description: text("description"),
   userId: text("user_id")
     .notNull()
@@ -197,15 +204,45 @@ export const application = pgTable("application", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => "app_" + nanoid()),
-  company: text("company").notNull(),
-  position: text("position").notNull(),
-  status: text("status").notNull(),
+  company: text("company"),
+  position: text("position"),
+  status: text("status").default("Pending").notNull(),
   jobLink: text("link"),
   jobDescription: text("job_description"),
   resume: jsonb("resume"),
-  coverLetter: text("cover_letter"),
+  coverLetter: jsonb("cover_letter"),
   appliedAt: timestamp("applied_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export const link = pgTable("link", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => "lnk_" + nanoid()),
+  title: text("title"),
+  url: text("url"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export const education = pgTable("education", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => "edu_" + nanoid()),
+  institution: text("institution"),
+  degree: text("degree"),
+  fieldOfStudy: text("field_of_study"),
+  startDate: text("start_date"),
+  endDate: text("end_date"),
+  description: text("description"),
+  gpa: text("gpa"),
+  city: text("city"),
+  state: text("state"),
+  order: integer("order").notNull(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -262,6 +299,20 @@ export const skillRelations = relations(skill, ({ one }) => ({
 export const coreValueRelations = relations(coreValue, ({ one }) => ({
   user: one(user, {
     fields: [coreValue.userId],
+    references: [user.id],
+  }),
+}));
+
+export const linkRelations = relations(link, ({ one }) => ({
+  user: one(user, {
+    fields: [link.userId],
+    references: [user.id],
+  }),
+}));
+
+export const educationRelations = relations(education, ({ one }) => ({
+  user: one(user, {
+    fields: [education.userId],
     references: [user.id],
   }),
 }));
