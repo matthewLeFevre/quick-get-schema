@@ -111,6 +111,16 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 // Rest of tables
 
+export const profile = pgTable("profile", {
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  headline: text("headline"),
+  summary: text("summary"),
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
 export const workExperience = pgTable("work_experience", {
   id: text("id")
     .primaryKey()
@@ -192,6 +202,8 @@ export const application = pgTable("application", {
   status: text("status").notNull(),
   jobLink: text("link"),
   jobDescription: text("job_description"),
+  resume: jsonb("resume"),
+  coverLetter: text("cover_letter"),
   appliedAt: timestamp("applied_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at"),
   userId: text("user_id")
