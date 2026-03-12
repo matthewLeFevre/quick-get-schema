@@ -116,6 +116,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 export const profile = pgTable("profile", {
   firstName: text("first_name"),
   lastName: text("last_name"),
+  phone: text("phone"),
   headline: text("headline"),
   summary: text("summary"),
   userId: text("user_id")
@@ -183,7 +184,6 @@ export const skill = pgTable("skill", {
     .primaryKey()
     .$defaultFn(() => "sk_" + nanoid()),
   name: text("name"),
-  phone: text("phone"),
   description: text("description"),
   userId: text("user_id")
     .notNull()
