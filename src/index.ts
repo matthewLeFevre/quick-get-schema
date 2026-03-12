@@ -182,7 +182,8 @@ export const skill = pgTable("skill", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => "sk_" + nanoid()),
-  name: text("name").notNull(),
+  name: text("name"),
+  phone: text("phone"),
   description: text("description"),
   userId: text("user_id")
     .notNull()
