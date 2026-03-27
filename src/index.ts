@@ -95,6 +95,8 @@ export const userRelations = relations(user, ({ many }) => ({
   coreValues: many(coreValue),
   links: many(link),
   educations: many(education),
+  projects: many(project),
+  files: many(file),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -212,8 +214,6 @@ export const application = pgTable("application", {
   jobLink: text("job_link"),
   jobDescription: text("job_description"),
   positionFit: integer("position_fit"),
-  positionSummary: text("position_summary"),
-  fitSummary: text("fit_summary"),
   analysis: jsonb("analysis"),
   resume: jsonb("resume"),
   coverLetter: jsonb("cover_letter"),
@@ -254,6 +254,90 @@ export const education = pgTable("education", {
     .references(() => user.id, { onDelete: "cascade" }),
 });
 
+export const workExperienceSectionSkill = pgTable(
+  "work_experience_section_skill",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => "wessk_" + nanoid()),
+    skillId: text("skill_id")
+      .notNull()
+      .references(() => skill.id, { onDelete: "cascade" }),
+    workExperienceSectionId: text("work_experience_section_id")
+      .notNull()
+      .references(() => workExperienceSection.id, { onDelete: "cascade" }),
+  },
+);
+
+export const project = pgTable("project", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => "proj_" + nanoid()),
+  title: text("title").notNull(),
+  description: text("description"),
+  workExperienceId: text("work_experience_id").references(
+    () => workExperience.id,
+    { onDelete: "cascade" },
+  ),
+  startDate: text("start_date"),
+  endDate: text("end_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export const projectSection = pgTable("project_section", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => "prjs_" + nanoid()),
+  title: text("title"),
+  description: text("description"),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => project.id, { onDelete: "cascade" }),
+});
+
+export const projectSkill = pgTable("project_skill", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => "prjsk_" + nanoid()),
+  skillId: text("skill_id")
+    .notNull()
+    .references(() => skill.id, { onDelete: "cascade" }),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => project.id, { onDelete: "cascade" }),
+});
+
+export const file = pgTable("file", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => "file-" + nanoid()),
+  name: text("name").notNull(),
+  url: text("url"),
+  mimeType: text("mimeType"),
+  awsKey: text("awsKey"),
+  size: integer("size"),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  projectId: text("project_id").references(() => project.id, {
+    onDelete: "cascade",
+  }),
+  projectSectionId: text("project_section_id").references(
+    () => projectSection.id,
+    { onDelete: "cascade" },
+  ),
+});
+
 // Relations
 
 export const workExperienceRelations = relations(
@@ -264,6 +348,7 @@ export const workExperienceRelations = relations(
       references: [user.id],
     }),
     sections: many(workExperienceSection),
+    projects: many(project),
   }),
 );
 
@@ -275,6 +360,7 @@ export const workExperienceSectionRelations = relations(
       references: [workExperience.id],
     }),
     results: many(workExperienceSectionResult),
+    workExperienceSectionSkills: many(workExperienceSectionSkill),
   }),
 );
 
@@ -295,11 +381,13 @@ export const powerStatementRelations = relations(powerStatement, ({ one }) => ({
   }),
 }));
 
-export const skillRelations = relations(skill, ({ one }) => ({
+export const skillRelations = relations(skill, ({ one, many }) => ({
   user: one(user, {
     fields: [skill.userId],
     references: [user.id],
   }),
+  workExperienceSectionSkills: many(workExperienceSectionSkill),
+  projectSkills: many(projectSkill),
 }));
 
 export const coreValueRelations = relations(coreValue, ({ one }) => ({
@@ -320,5 +408,70 @@ export const educationRelations = relations(education, ({ one }) => ({
   user: one(user, {
     fields: [education.userId],
     references: [user.id],
+  }),
+}));
+
+export const workExperienceSectionSkillRelations = relations(
+  workExperienceSectionSkill,
+  ({ one }) => ({
+    skill: one(skill, {
+      fields: [workExperienceSectionSkill.skillId],
+      references: [skill.id],
+    }),
+    workExperienceSection: one(workExperienceSection, {
+      fields: [workExperienceSectionSkill.workExperienceSectionId],
+      references: [workExperienceSection.id],
+    }),
+  }),
+);
+
+export const projectRelations = relations(project, ({ one, many }) => ({
+  user: one(user, {
+    fields: [project.userId],
+    references: [user.id],
+  }),
+  workExperience: one(workExperience, {
+    fields: [project.workExperienceId],
+    references: [workExperience.id],
+  }),
+  sections: many(projectSection),
+  projectSkills: many(projectSkill),
+  files: many(file),
+}));
+
+export const projectSectionRelations = relations(
+  projectSection,
+  ({ one, many }) => ({
+    project: one(project, {
+      fields: [projectSection.projectId],
+      references: [project.id],
+    }),
+    files: many(file),
+  }),
+);
+
+export const projectSkillRelations = relations(projectSkill, ({ one }) => ({
+  skill: one(skill, {
+    fields: [projectSkill.skillId],
+    references: [skill.id],
+  }),
+  project: one(project, {
+    fields: [projectSkill.projectId],
+    references: [project.id],
+  }),
+}));
+
+export const fileRelations = relations(file, ({ one }) => ({
+  user: one(user, {
+    fields: [file.userId],
+    references: [user.id],
+  }),
+  project: one(project, {
+    fields: [file.projectId],
+    references: [project.id],
+  }),
+  projectSection: one(projectSection, {
+    fields: [file.projectSectionId],
+    references: [projectSection.id],
   }),
 }));
